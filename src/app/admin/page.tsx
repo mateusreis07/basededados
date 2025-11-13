@@ -24,6 +24,13 @@ interface MenuItem {
   isActive: boolean
 }
 
+interface Category {
+  id: string
+  name: string
+  description?: string
+  color: string
+}
+
 interface Item {
   id: string
   title: string

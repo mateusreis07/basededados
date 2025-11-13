@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../../../lib/prisma'
+import { SectionType } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
@@ -124,8 +125,8 @@ export async function POST(
     const usedFilters = existingFilters.map(t => t.sectionFilter)
 
     // Lista de filtros disponíveis (começando por CUSTOM_1 para novos tipos)
-    const availableFilters = ['CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3', 'CUSTOM_4', 'CUSTOM_5']
-    const uniqueFilter = availableFilters.find(filter => !usedFilters.includes(filter)) || 'CUSTOM'
+    const availableFilters: SectionType[] = ['CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3', 'CUSTOM_4', 'CUSTOM_5']
+    const uniqueFilter: SectionType = availableFilters.find(filter => !usedFilters.includes(filter)) || 'CUSTOM'
 
     const sectionType = await prisma.sectionTypeGroup.create({
       data: {

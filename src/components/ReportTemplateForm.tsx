@@ -442,8 +442,8 @@ export default function ReportTemplateForm({ onSubmit, loading, initialData, isE
     }
 
     // Disponibilidade Analistas - Dinâmica baseada nos membros reais
-    const presencial = []
-    const homeoffice = []
+    const presencial: string[] = []
+    const homeoffice: string[] = []
 
     // Iterar pelos membros e verificar se estão selecionados
     members.forEach(member => {
@@ -478,7 +478,7 @@ export default function ReportTemplateForm({ onSubmit, loading, initialData, isE
     }
 
     // Plantão - Dinâmico baseado nos membros reais
-    const plantao = []
+    const plantao: string[] = []
     members.forEach(member => {
       if (data[`plantao_${member.id}`]) {
         plantao.push(member.name)

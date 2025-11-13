@@ -21,17 +21,22 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, description, color = '#6B7280' } = body
+    const { name, description, color = '#6B7280', teamId } = body
 
     if (!name) {
       return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
+    }
+
+    if (!teamId) {
+      return NextResponse.json({ error: 'TeamId é obrigatório' }, { status: 400 })
     }
 
     const category = await prisma.category.create({
       data: {
         name,
         description,
-        color
+        color,
+        teamId
       },
       include: {
         _count: {

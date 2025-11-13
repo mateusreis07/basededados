@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, content, status, category, tags, author, template, templateData } = body
+    const { title, content, status, category, tags, author, template, templateData, teamId } = body
 
     // Validações básicas
-    if (!title || !content || !category) {
+    if (!title || !content || !category || !teamId) {
       return NextResponse.json(
-        { error: 'Título, conteúdo e categoria são obrigatórios' },
+        { error: 'Título, conteúdo, categoria e teamId são obrigatórios' },
         { status: 400 }
       )
     }
@@ -79,7 +79,8 @@ export async function POST(request: NextRequest) {
         tags: tags || [],
         author: author || 'Sistema',
         template,
-        templateData
+        templateData,
+        teamId
       }
     })
 

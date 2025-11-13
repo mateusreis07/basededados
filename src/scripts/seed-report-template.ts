@@ -1,13 +1,16 @@
 // Script para criar template de relatório baseado no modelo WhatsApp
+// TEMPORARIAMENTE DESABILITADO - reportTemplate não existe no schema
 
 async function seedReportTemplate() {
-  console.log('🌱 Criando template de relatório...')
+  console.log('🌱 Criando template de relatório... (DESABILITADO)')
+  console.log('❌ Template de relatório desabilitado - modelo não existe no schema')
+  return
 
+  /*
   try {
     // Importação dinâmica do Prisma
     const { PrismaClient } = await import('@prisma/client')
     const prisma = new PrismaClient()
-
     try {
       // Template baseado no modelo WhatsApp fornecido
       const templateStructure = {
@@ -230,6 +233,7 @@ async function seedReportTemplate() {
   } catch (error) {
     console.error('❌ Erro ao criar templates:', error)
   }
+  */
 }
 
 seedReportTemplate()

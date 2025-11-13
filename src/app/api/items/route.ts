@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, content, tags, sectionId, categoryId } = body
+    const { title, content, tags, sectionId, categoryId, teamId } = body
 
-    if (!title || !content || !sectionId) {
-      return NextResponse.json({ error: 'Título, conteúdo e seção são obrigatórios' }, { status: 400 })
+    if (!title || !content || !sectionId || !teamId) {
+      return NextResponse.json({ error: 'Título, conteúdo, seção e teamId são obrigatórios' }, { status: 400 })
     }
 
     const item = await prisma.item.create({
@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
         content,
         tags: tags || [],
         sectionId,
-        categoryId: categoryId || null
+        categoryId: categoryId || null,
+        teamId
       },
       include: {
         section: true,

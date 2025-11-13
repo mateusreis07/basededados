@@ -4,14 +4,20 @@ import { prisma } from '../../../../../lib/prisma'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { localStorageTypes } = body
+    const { localStorageTypes, teamId } = body
 
     if (!localStorageTypes || !Array.isArray(localStorageTypes)) {
       return NextResponse.json({ error: 'Dados do localStorage inválidos' }, { status: 400 })
     }
 
-    // Verificar se já existem tipos no banco
-    const existingTypes = await prisma.sectionTypeGroup.findMany()
+    if (!teamId) {
+      return NextResponse.json({ error: 'TeamId é obrigatório' }, { status: 400 })
+    }
+
+    // Verificar se já existem tipos no banco para este team
+    const existingTypes = await prisma.sectionTypeGroup.findMany({
+      where: { teamId }
+    })
 
     if (existingTypes.length > 0) {
       return NextResponse.json({
@@ -28,7 +34,8 @@ export async function POST(request: NextRequest) {
       color: type.color || '#3B82F6',
       order: type.order || 0,
       active: type.active !== undefined ? type.active : true,
-      sectionFilter: type.sectionFilter || 'CUSTOM'
+      sectionFilter: type.sectionFilter || 'CUSTOM',
+      teamId
     }))
 
     const result = await prisma.sectionTypeGroup.createMany({
@@ -37,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar os tipos criados para retornar
     const createdTypes = await prisma.sectionTypeGroup.findMany({
+      where: { teamId },
       orderBy: [
         { order: 'asc' },
         { name: 'asc' }

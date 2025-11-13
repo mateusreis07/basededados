@@ -17,10 +17,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, href, icon, order = 0 } = body
+    const { name, href, icon, order = 0, teamId } = body
 
-    if (!name || !href) {
-      return NextResponse.json({ error: 'Nome e href são obrigatórios' }, { status: 400 })
+    if (!name || !href || !teamId) {
+      return NextResponse.json({ error: 'Nome, href e teamId são obrigatórios' }, { status: 400 })
     }
 
     const menuItem = await prisma.menuItem.create({
@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
         name,
         href,
         icon: icon || '📄',
-        order
+        order,
+        teamId
       }
     })
 

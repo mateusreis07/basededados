@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { SectionType } from '@prisma/client'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const teamId = searchParams.get('teamId')
+
+    if (!teamId) {
+      return NextResponse.json({ error: 'TeamId é obrigatório' }, { status: 400 })
+    }
+
     const sectionTypes = await prisma.sectionTypeGroup.findMany({
+      where: { teamId },
       orderBy: [
         { order: 'asc' },
         { name: 'asc' }
       ]
     })
 
-    // Se não houver tipos, criar os padrão
+    // Se não houver tipos, criar os padrão para este team
     if (sectionTypes.length === 0) {
       const defaultTypes = [
         {
@@ -20,7 +29,8 @@ export async function GET() {
           color: '#3B82F6',
           order: 1,
           active: true,
-          sectionFilter: 'MENU' as const
+          sectionFilter: 'MENU' as const,
+          teamId
         },
         {
           name: 'SEÇÕES FIXAS',
@@ -29,7 +39,8 @@ export async function GET() {
           color: '#10B981',
           order: 2,
           active: true,
-          sectionFilter: 'FIXED' as const
+          sectionFilter: 'FIXED' as const,
+          teamId
         },
         {
           name: 'SEÇÕES PERSONALIZADAS',
@@ -38,7 +49,8 @@ export async function GET() {
           color: '#8B5CF6',
           order: 3,
           active: true,
-          sectionFilter: 'CUSTOM' as const
+          sectionFilter: 'CUSTOM' as const,
+          teamId
         }
       ]
 
@@ -48,6 +60,7 @@ export async function GET() {
 
       // Buscar os tipos criados para retornar
       const newSectionTypes = await prisma.sectionTypeGroup.findMany({
+        where: { teamId },
         orderBy: [
           { order: 'asc' },
           { name: 'asc' }
@@ -67,30 +80,32 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, description, icon = '📁', color = '#3B82F6', active = true, order } = body
+    const { name, description, icon = '📁', color = '#3B82F6', active = true, order, teamId } = body
 
-    if (!name) {
-      return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
+    if (!name || !teamId) {
+      return NextResponse.json({ error: 'Nome e teamId são obrigatórios' }, { status: 400 })
     }
 
-    // Se order não foi fornecido, usar o próximo número disponível
+    // Se order não foi fornecido, usar o próximo número disponível para este team
     let finalOrder = order
     if (finalOrder === undefined) {
       const lastType = await prisma.sectionTypeGroup.findFirst({
+        where: { teamId },
         orderBy: { order: 'desc' }
       })
       finalOrder = (lastType?.order || 0) + 1
     }
 
-    // Encontrar um sectionFilter único disponível
+    // Encontrar um sectionFilter único disponível para este team
     const existingFilters = await prisma.sectionTypeGroup.findMany({
+      where: { teamId },
       select: { sectionFilter: true }
     })
     const usedFilters = existingFilters.map(t => t.sectionFilter)
 
     // Lista de filtros disponíveis (começando por CUSTOM_1 para novos tipos)
-    const availableFilters = ['CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3', 'CUSTOM_4', 'CUSTOM_5']
-    const uniqueFilter = availableFilters.find(filter => !usedFilters.includes(filter)) || 'CUSTOM'
+    const availableFilters: SectionType[] = ['CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3', 'CUSTOM_4', 'CUSTOM_5']
+    const uniqueFilter: SectionType = availableFilters.find(filter => !usedFilters.includes(filter)) || 'CUSTOM'
 
     const sectionType = await prisma.sectionTypeGroup.create({
       data: {
@@ -100,7 +115,8 @@ export async function POST(request: NextRequest) {
         color,
         active,
         sectionFilter: uniqueFilter,
-        order: finalOrder
+        order: finalOrder,
+        teamId
       }
     })
 

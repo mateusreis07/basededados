@@ -25,10 +25,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, description, type = 'CUSTOM', order = 0 } = body
+    const { name, description, type = 'CUSTOM', order = 0, teamId } = body
 
-    if (!name) {
-      return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
+    if (!name || !teamId) {
+      return NextResponse.json({ error: 'Nome e teamId são obrigatórios' }, { status: 400 })
     }
 
     const section = await prisma.section.create({
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
         name,
         description,
         type: type as 'FIXED' | 'CUSTOM',
-        order
+        order,
+        teamId
       },
       include: {
         _count: {
