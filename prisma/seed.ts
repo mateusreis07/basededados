@@ -9,6 +9,20 @@ async function main() {
   await prisma.item.deleteMany()
   await prisma.section.deleteMany()
   await prisma.sectionTypeGroup.deleteMany()
+  await prisma.team.deleteMany()
+
+  // Criar team padrão
+  const defaultTeam = await prisma.team.create({
+    data: {
+      name: 'Demo Team',
+      slug: 'demo',
+      description: 'Team de demonstração da Base de Conhecimento',
+      email: 'demo@exemplo.com',
+      isActive: true
+    }
+  })
+
+  console.log('👥 Team padrão criado com sucesso!')
 
   // Criar tipos de seção padrão
   const sectionTypes = await prisma.sectionTypeGroup.createMany({
@@ -20,7 +34,8 @@ async function main() {
         color: '#3B82F6',
         order: 1,
         active: true,
-        sectionFilter: 'MENU'
+        sectionFilter: 'MENU',
+        teamId: defaultTeam.id
       },
       {
         name: 'SEÇÕES FIXAS',
@@ -29,7 +44,8 @@ async function main() {
         color: '#10B981',
         order: 2,
         active: true,
-        sectionFilter: 'FIXED'
+        sectionFilter: 'FIXED',
+        teamId: defaultTeam.id
       },
       {
         name: 'SEÇÕES PERSONALIZADAS',
@@ -38,7 +54,8 @@ async function main() {
         color: '#8B5CF6',
         order: 3,
         active: true,
-        sectionFilter: 'CUSTOM'
+        sectionFilter: 'CUSTOM',
+        teamId: defaultTeam.id
       }
     ]
   })
@@ -51,6 +68,7 @@ async function main() {
       id: 'scripts',
       name: 'Scripts PostgreSQL',
       description: 'Queries e scripts PostgreSQL',
+      teamId: defaultTeam.id,
     },
   })
 
@@ -59,6 +77,7 @@ async function main() {
       id: 'informacoes',
       name: 'Informações Gerais',
       description: 'Documentação do sistema',
+      teamId: defaultTeam.id,
     },
   })
 
@@ -67,6 +86,7 @@ async function main() {
       id: 'erros',
       name: 'Erros',
       description: 'Troubleshooting e soluções',
+      teamId: defaultTeam.id,
     },
   })
 
@@ -89,6 +109,7 @@ WHERE u.active = true
 ORDER BY u.last_login DESC;`,
         tags: ['select', 'users', 'active', 'postgresql'],
         sectionId: scriptsSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Backup de tabela específica',
@@ -99,6 +120,7 @@ pg_dump -h localhost -U postgres -t usuarios base_conhecimento > backup_usuarios
 psql -h localhost -U postgres -d base_conhecimento < backup_usuarios.sql`,
         tags: ['backup', 'pg_dump', 'restore', 'postgresql'],
         sectionId: scriptsSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Performance - Índices mais usados',
@@ -114,6 +136,7 @@ ORDER BY idx_scan DESC
 LIMIT 10;`,
         tags: ['performance', 'index', 'monitoring', 'postgresql'],
         sectionId: scriptsSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Listar tabelas por tamanho',
@@ -126,6 +149,7 @@ WHERE schemaname = 'public'
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;`,
         tags: ['size', 'tables', 'monitoring', 'postgresql'],
         sectionId: scriptsSection.id,
+        teamId: defaultTeam.id,
       },
     ],
   })
@@ -162,6 +186,7 @@ npm run db:studio - Interface visual do banco
 npm run dev - Executar em desenvolvimento`,
         tags: ['configuracao', 'ambiente', 'setup', 'supabase'],
         sectionId: informacoesSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Padrões de Código e Nomenclatura',
@@ -199,6 +224,7 @@ refactor: refatoração
 test: testes`,
         tags: ['codigo', 'padrao', 'nomenclatura', 'git', 'api'],
         sectionId: informacoesSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Arquitetura do Sistema',
@@ -237,6 +263,7 @@ test: testes`,
 - Autenticação (futuro)`,
         tags: ['arquitetura', 'stack', 'estrutura', 'seguranca'],
         sectionId: informacoesSection.id,
+        teamId: defaultTeam.id,
       },
     ],
   })
@@ -278,6 +305,7 @@ DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postg
 npm run dev`,
         tags: ['supabase', 'timeout', 'connection', 'troubleshooting'],
         sectionId: errosSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Erro: Prisma generate falha',
@@ -320,6 +348,7 @@ npm install
 npx prisma generate`,
         tags: ['prisma', 'generate', 'schema', 'troubleshooting'],
         sectionId: errosSection.id,
+        teamId: defaultTeam.id,
       },
       {
         title: 'Erro: API retorna 500 após deploy',
@@ -361,6 +390,7 @@ Vercel Dashboard → Project → Functions → View Logs
 - Testar endpoints individualmente`,
         tags: ['deploy', 'vercel', '500', 'producao', 'troubleshooting'],
         sectionId: errosSection.id,
+        teamId: defaultTeam.id,
       },
     ],
   })
