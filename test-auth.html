@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth Cookie</title>
+</head>
+<body>
+    <h1>Test Auth Cookie</h1>
+    <script>
+        console.log('Todos os cookies:', document.cookie);
+
+        // Fazer login de teste
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: 'default@exemplo.com',
+                password: '123456'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response do login:', data);
+
+            // Verificar se cookie foi definido (não vai aparecer por ser httpOnly)
+            console.log('Cookies após login:', document.cookie);
+
+            // Testar /api/auth/me
+            return fetch('/api/auth/me');
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response do /auth/me:', data);
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+        });
+    </script>
+</body>
+</html>

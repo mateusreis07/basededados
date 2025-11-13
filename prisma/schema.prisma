@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique // Para URLs amigáveis (ex: /team/marketing)
+  description String?
+  domain      String?  // Domínio personalizado opcional
+  settings    Json?    // Configurações específicas do team
+  email       String?  @unique // Email para autenticação
+  password    String?  // Senha hash
+  isActive    Boolean  @default(true) // Team ativo/inativo
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  sections        Section[]
+  categories      Category[]
+  items           Item[]
+  menuItems       MenuItem[]
+  sectionTypeGroups SectionTypeGroup[]
+  reports         Report[]
+  members         TeamMember[]
+
+  @@map("teams")
+}
+
+model Section {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  type        SectionType @default(CUSTOM)
+  order       Int         @default(0)
+  isActive    Boolean     @default(true) // Seção ativa/inativa
+  teamId      String      @map("team_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  items       Item[]
+
+  @@unique([name, teamId]) // Nome único por team
+  @@index([teamId])
+  @@map("sections")
+}
+
+enum SectionType {
+  FIXED
+  CUSTOM
+  MENU
+  MATEUS
+  CUSTOM_1
+  CUSTOM_2
+  CUSTOM_3
+  CUSTOM_4
+  CUSTOM_5
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String   @default("#6B7280") // Cor para identificação visual
+  teamId      String   @map("team_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  items       Item[]
+
+  @@unique([name, teamId]) // Nome único por team
+  @@index([teamId])
+  @@map("categories")
+}
+
+model Item {
+  id         String    @id @default(cuid())
+  title      String
+  content    String
+  tags       String[]
+  sectionId  String    @map("section_id")
+  categoryId String?   @map("category_id")
+  teamId     String    @map("team_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team       Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  section    Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([title])
+  @@index([sectionId])
+  @@index([categoryId])
+  @@index([teamId])
+  @@map("items")
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  href        String
+  icon        String
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  teamId      String   @map("team_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@map("menu_items")
+}
+
+model SectionTypeGroup {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  icon          String      @default("📁")
+  color         String      @default("#3B82F6")
+  order         Int         @default(0)
+  active        Boolean     @default(true)
+  sectionFilter SectionType @default(CUSTOM)
+  teamId        String      @map("team_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@map("section_type_groups")
+}
+
+model Report {
+  id           String      @id @default(cuid())
+  title        String
+  content      String
+  status       ReportStatus @default(PUBLISHED)
+  category     String
+  tags         String[]
+  author       String      @default("Sistema")
+  template     String?     // Template usado para criar o relatório
+  templateData Json?       // Dados do formulário do template
+  teamId       String      @map("team_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team         Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@index([teamId])
+  @@map("reports")
+}
+
+enum ReportStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TeamMember {
+  id          String     @id @default(cuid())
+  name        String
+  email       String
+  position    String?    // Cargo/função no team
+  department  String?    // Departamento
+  phone       String?    // Telefone
+  isActive    Boolean    @default(true) // Membro ativo/inativo
+  joinDate    DateTime   @default(now()) @map("join_date") // Data de entrada no team
+  notes       String?    // Observações sobre o membro
+  teamId      String     @map("team_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  team        Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([email, teamId]) // Email único por team
+  @@index([teamId])
+  @@index([isActive])
+  @@map("team_members")
+}
