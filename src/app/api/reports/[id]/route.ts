@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 // GET /api/reports/[id] - Buscar relatório por ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const report = await prisma.report.findUnique({
       where: { id }
@@ -35,10 +35,10 @@ export async function GET(
 // PUT /api/reports/[id] - Atualizar relatório
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const { title, content, status, category, tags, template, templateData } = body
 
@@ -89,10 +89,10 @@ export async function PUT(
 // DELETE /api/reports/[id] - Excluir relatório
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     // Verificar se o relatório existe
     const existingReport = await prisma.report.findUnique({
